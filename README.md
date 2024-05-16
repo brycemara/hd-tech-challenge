@@ -1,30 +1,48 @@
-# React + TypeScript + Vite
+Recurring Transactions
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Initial thinking:
+We have:
 
-Currently, two official plugins are available:
+- array of transactions with a time, description and amount
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+We want:
 
-## Expanding the ESLint configuration
+- to identify recurring transactions
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+Assumptions:
 
-- Configure the top-level `parserOptions` property like this:
+- 'identifying transactions' means grouping the recurring transactions together
+- there should be no duplicate identities
+- grouping thoughts ? using a reduce, creating a new array
 
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
+Definition of recurring transaction:
+
+- subscription, rent, weekly company lunch
+- happens more than once
+- is the same amount (?) - no not with the lunch
+
+What do all these have in common?
+
+- happens in cadence (i.e. rent is charged same day every month, subscription charged same day every month, lunch charged weekly)
+- lunch could be any day though - just needs to be in a weekly window
+
+Code thinking:
+
+- group all the transactions with the same description together
+- sort by time
+- find the difference in the times
+- if the difference in times is the same (maybe +/- a day)
+- then its a recurring transaction
+- add the recurring transaction to something (maybe object?)
+
+something like :
+groupedTransactions = {
+"spotify": [
+...transactions,
+],
+"other": [
+...transactions
+]
 }
-```
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+^^ not gonna work because of the strings not being ===
