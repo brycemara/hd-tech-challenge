@@ -49,7 +49,31 @@ function App() {
     return costs[s2.length]
   }
 
-  const findRecurringTransactions = () => {
+  function longestCommonSubstring(str1: any, str2: any) {
+    const table = Array(str1.length + 1)
+      .fill(null)
+      .map(() => Array(str2.length + 1).fill(0))
+    let maxLength = 0
+    let endIndex = 0
+
+    for (let i = 1; i <= str1.length; i++) {
+      for (let j = 1; j <= str2.length; j++) {
+        if (str1[i - 1] === str2[j - 1]) {
+          table[i][j] = table[i - 1][j - 1] + 1
+          if (table[i][j] > maxLength) {
+            maxLength = table[i][j]
+            endIndex = i - 1
+          }
+        } else {
+          table[i][j] = 0
+        }
+      }
+    }
+
+    return str1.substring(endIndex - maxLength + 1, endIndex + 1)
+  }
+
+  const identifyRecurringTransactions = () => {
     const grouped = transactions.reduce((acc: any, t: T, i: number) => {
       if (!acc[t.description]) {
         acc[t.description] = []
@@ -58,53 +82,38 @@ function App() {
       return acc
     }, {})
 
-    const groups = Object.keys(grouped)
+    const descriptions = Object.keys(grouped)
 
-    for (let i = 0; i < groups.length - 1; i++) {
-      console.log(groups[i])
-      const sim = similarity(groups[i], groups[i + 1])
+    for (let i = 0; i < descriptions.length - 1; i++) {
+      console.log(descriptions[i])
+
+      const sim = similarity(descriptions[i], descriptions[i + 1])
       if (sim >= 0.7 && sim !== 1) {
-        grouped[groups[i]] = grouped[groups[i]].concat(grouped[groups[i + 1]])
+        const common = longestCommonSubstring(
+          descriptions[i],
+          descriptions[i + 1]
+        )
+        if (!grouped[common]) {
+          grouped[common] = []
+          grouped[common] = grouped[descriptions[i]].concat(
+            grouped[descriptions[i + 1]]
+          )
+        } else {
+          grouped[common] = grouped[descriptions[i]].concat(
+            grouped[descriptions[i + 1]]
+          )
+        }
       }
     }
 
-    // const obj: any = {}
-    // for (let i = 0; i < transactions.length - 1; i++) {
-    //   const sim = similarity(
-    //     transactions[i].description,
-    //     transactions[i + 1].description
-    //   )
-    //   if (sim >= 0.7 && sim !== 1) {
-    //     if (!obj[transactions[i].description]) {
-    //       obj[transactions[i].description] = []
-    //       obj[transactions[i].description].push(transactions[i])
-    //     } else {
-    //       obj[transactions[i].description].push(transactions[i])
-    //     }
-    //   }
-    // }
-
-    // console.log(obj)
-
-    // const obj = transactions.reduce((acc:any, t:T, i:number) => {
-    //   // go thru the transactions and compare them to each other
-    //   // if they have a similarty > .70 then we're going to add them to the same array
-    //   if()
-    //   const sim = similarity("one-off meal", "special meal")
-
-    // }, {
-
-    // })
-
-    // const sim = similarity("one-off meal", "special meal")
-    // greater than 70%
+    return grouped
   }
 
   return (
     <>
       <div className="bg-blue-500 text-red-500">
-        <button onClick={() => findRecurringTransactions()}>
-          find recurring!
+        <button onClick={() => identifyRecurringTransactions()}>
+          find recurring! (check logs)
         </button>
       </div>
     </>

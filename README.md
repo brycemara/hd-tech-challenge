@@ -46,3 +46,20 @@ groupedTransactions = {
 }
 
 ^^ not gonna work because of the strings not being ===
+
+Reflections:
+
+1. How would you measure the accuracy of your approach?
+   Unit testing!
+
+2. How would you know whether solving this problem made a material impact on customers?
+   I think with any new feature you would have user testing first with a pool of users (friends + family, beta testers) to ensure that this feature was desired by customers before having the engineering team start the development.
+
+3. What other approaches would you investigate if you had more time?
+
+What I'd do differently:
+
+- would have looked at the data more closey initally & noticed to slight differences in the descriptions
+- contemplated switching from focusing on descriptions to focusing on dates but didn't have time to pivot
+- thoughts on dates were i could see if transactions were within month of eachother and then compare descriptions and if descriptions had a strong similarty then i could categorize that as a recurring transaction
+- yeah, probably should have done that ^
