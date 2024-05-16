@@ -63,3 +63,5 @@ What I'd do differently:
 - contemplated switching from focusing on descriptions to focusing on dates but didn't have time to pivot
 - thoughts on dates were i could see if transactions were within month of eachother and then compare descriptions and if descriptions had a strong similarty then i could categorize that as a recurring transaction
 - yeah, probably should have done that ^
+
+Quick note: With the front end I wanted to make a UI that the user could click find recurring transactions and it'd show them their subscriptions with a dropdown that contained a list of the recurring transactions.
