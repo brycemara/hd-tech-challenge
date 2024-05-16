@@ -9,114 +9,80 @@ interface T {
 function App() {
   const { transactions } = data
 
-  function similarity(s1: any, s2: any) {
-    let longer = s1
-    let shorter = s2
-    if (s1.length < s2.length) {
-      longer = s2
-      shorter = s1
-    }
-    let longerLength = longer.length
-    if (longerLength == 0) {
-      return 1.0
-    }
-    return (
-      (longerLength - editDistance(longer, shorter)) / parseFloat(longerLength)
-    )
+  const descriptions = transactions.map((t) => t.description)
+
+  const decuped: any = []
+  const match = (str1: any, str2: any) => {
+    const split1 = str1.split(" ")
+    const split2 = str2.split(" ")
+    const matched = split1.filter((sp1: any) => split2.includes(sp1)).join(" ")
+    return matched ? matched : false
   }
 
-  function editDistance(s1: string, s2: string) {
-    s1 = s1.toLowerCase()
-    s2 = s2.toLowerCase()
+  for (let i = 0; i < descriptions.length - 1; i++) {
+    const matched = match(descriptions[i], descriptions[i + 1])
+    console.log(matched)
+    if (!matched) {
+      continue
+    }
+    if (!decuped.includes(matched)) {
+      decuped.push(matched)
+    }
+  }
 
-    var costs = new Array()
-    for (var i = 0; i <= s1.length; i++) {
-      var lastValue = i
-      for (var j = 0; j <= s2.length; j++) {
-        if (i == 0) costs[j] = j
-        else {
-          if (j > 0) {
-            var newValue = costs[j - 1]
-            if (s1.charAt(i - 1) != s2.charAt(j - 1))
-              newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1
-            costs[j - 1] = lastValue
-            lastValue = newValue
+  const groupedTransactions = transactions.reduce((acc: any, t: any) => {
+    if (!acc["other"]) {
+      acc["other"] = []
+    }
+    const find = decuped.find((d: any) => t.description.includes(d))
+    if (!find) {
+      acc["other"].push(t)
+    }
+    if (!acc[find]) {
+      acc[find] = []
+    }
+    acc[find].push({ ...t, group: find })
+    return acc
+  }, {})
+
+  const keys = Object.keys(groupedTransactions)
+
+  const identifyRecurring = () => {
+    const differentDays = keys.map((k) => {
+      const transactions = groupedTransactions[k]
+      for (let i = 1; i < transactions.length - 1; i++) {
+        const date1 = new Date(transactions[i].date)
+        const date2 = new Date(transactions[i - 1].date)
+        const diffTime = Math.abs(date2 - date1)
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+        transactions[i].diffDays = diffDays
+      }
+      return transactions
+    })
+    const recurringTransactions = differentDays
+      .filter((dd) => dd.length > 1)
+      .map((dd) => {
+        for (let i = 1; i < dd.length - 1; i++) {
+          const currentDay = dd[i].diffDays
+          const high = dd[i].diffDays + 1
+          const low = dd[i].diffDays - 1
+          if (currentDay >= low && currentDay <= high) {
+            return dd[i].group
           }
         }
-      }
-      if (i > 0) costs[s2.length] = lastValue
-    }
-    return costs[s2.length]
+      })
+      .filter((d) => d !== undefined)
+    return recurringTransactions
   }
 
-  function longestCommonSubstring(str1: any, str2: any) {
-    const table = Array(str1.length + 1)
-      .fill(null)
-      .map(() => Array(str2.length + 1).fill(0))
-    let maxLength = 0
-    let endIndex = 0
-
-    for (let i = 1; i <= str1.length; i++) {
-      for (let j = 1; j <= str2.length; j++) {
-        if (str1[i - 1] === str2[j - 1]) {
-          table[i][j] = table[i - 1][j - 1] + 1
-          if (table[i][j] > maxLength) {
-            maxLength = table[i][j]
-            endIndex = i - 1
-          }
-        } else {
-          table[i][j] = 0
-        }
-      }
-    }
-
-    return str1.substring(endIndex - maxLength + 1, endIndex + 1)
-  }
-
-  const identifyRecurringTransactions = () => {
-    const grouped = transactions.reduce((acc: any, t: T, i: number) => {
-      if (!acc[t.description]) {
-        acc[t.description] = []
-      }
-      acc[t.description].push(t)
-      return acc
-    }, {})
-
-    const descriptions = Object.keys(grouped)
-
-    for (let i = 0; i < descriptions.length - 1; i++) {
-      console.log(descriptions[i])
-
-      const sim = similarity(descriptions[i], descriptions[i + 1])
-      if (sim >= 0.7 && sim !== 1) {
-        const common = longestCommonSubstring(
-          descriptions[i],
-          descriptions[i + 1]
-        )
-        if (!grouped[common]) {
-          grouped[common] = []
-          grouped[common] = grouped[descriptions[i]].concat(
-            grouped[descriptions[i + 1]]
-          )
-        } else {
-          grouped[common] = grouped[descriptions[i]].concat(
-            grouped[descriptions[i + 1]]
-          )
-        }
-      }
-    }
-
-    return grouped
-  }
-
+  const recurring = identifyRecurring()
   return (
-    <>
-      <div className="bg-blue-500 text-red-500">
-        <button onClick={() => identifyRecurringTransactions()}>
-          find recurring! (check logs)
-        </button>
-      </div>
-    </>
+    <div className="w-full h-full flex flex-col justify-center items-center pt-8">
+      <p>Your recurring transactions include:</p>
+      {recurring.map((rt) => {
+        return <p>{rt}</p>
+      })}
+    </div>
   )
 }
 
